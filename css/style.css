@@ -294,6 +294,8 @@ kbd{background:#120a24;border:2px solid #574a7a;border-radius:6px;padding:0 6px;
 .setting-row input{width:26px;height:26px;flex:none;accent-color:var(--yellow)}
 .setting-row span span{display:block;font-size:.9rem;line-height:1.4;color:#e4d8ff;margin-top:4px}
 .setting-row input:focus-visible,.settings-box button:focus-visible{outline:3px solid var(--yellow);outline-offset:4px}
+.choice-btn:focus-visible{outline:4px solid var(--yellow);outline-offset:-2px}
+.friend-chip:focus-visible{outline:3px solid var(--teal);outline-offset:4px}
 .settings-preview{margin-top:16px;padding:12px;background:#120a24;border-radius:12px}
 #settings-status{min-height:1.5em;font-size:.9rem;color:var(--teal)}
 .dlg-settings{position:absolute;top:14px;left:116px;z-index:7;min-height:44px;padding:8px 10px;border:2px solid #574a7a;border-radius:12px;background:rgba(18,10,36,.85);color:#fff;font-family:inherit;font-weight:800;font-size:.9rem;cursor:pointer;display:inline-flex;align-items:center;gap:6px}

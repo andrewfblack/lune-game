@@ -7,7 +7,7 @@
 // Comfort preferences are browser-local, never part of a story save/migration.
 const SETTINGS_KEY = 'luneComfortSettingsV1';
 function loadSettings() {
-  const defaults = { muted:false, reducedMotion:!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches, instantText:false, largeDialogue:false };
+  const defaults = { muted:false, reducedMotion:!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches, instantText:false, largeDialogue:false, cozy:false, keyboardChoices:true };
   try {
     const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY));
     for (const key of Object.keys(defaults)) if (typeof saved?.[key] === 'boolean') defaults[key] = saved[key];
@@ -15,6 +15,7 @@ function loadSettings() {
   return defaults;
 }
 const settings = loadSettings();
+if (typeof settings.cozy !== 'boolean') settings.cozy = false;
 
 // ───────────────────────── AUDIO (tiny WebAudio synth) ─────────────────────────
 const SFX = (() => {
@@ -153,15 +154,23 @@ let settingsOpener = null;
 let settingsBackground = [];
 let settingsPreviousInert = false;
 function settingsOpen() { return !$('#settings-modal').classList.contains('hidden'); }
+function syncCozyState() {
+  const allComfortEnabled = settings.muted && settings.reducedMotion && settings.instantText && settings.largeDialogue;
+  settings.cozy = !!(allComfortEnabled && settings.cozy) || allComfortEnabled;
+  if (!settings.muted || !settings.reducedMotion || !settings.instantText || !settings.largeDialogue) settings.cozy = false;
+}
 function applySettings() {
+  syncCozyState();
   document.documentElement.classList.toggle('reduced-motion', settings.reducedMotion);
   document.documentElement.classList.toggle('large-dialogue', settings.largeDialogue);
   SFX.setMuted();
-  if (settings.instantText && $('#dlg-text')._skip) {
+  if (settings.instantText && $('#dlg-text')._skip && typeof document !== 'undefined') {
     const finish = $('#dlg-text')._skip;
     $('#dlg-text')._skip = null;
     finish();
   }
+  const cozy = document && document.getElementById('setting-cozy');
+  if (cozy) cozy.checked = settings.cozy;
 }
 function closeSettings() {
   $('#settings-modal').classList.add('hidden');
@@ -187,9 +196,24 @@ function wireSettings() {
       $('#setting-muted').focus();
     });
   }
+  const comfortKeys = ['muted', 'reducedMotion', 'instantText', 'largeDialogue'];
+  function refreshCozyControls() {
+    settings.cozy = comfortKeys.every(key => settings[key]);
+    const cozy = $('#setting-cozy');
+    if (cozy) cozy.checked = settings.cozy;
+  }
   for (const key of Object.keys(settings)) {
     $('#setting-' + key).addEventListener('change', event => {
-      settings[key] = event.target.checked;
+      if (key === 'cozy') {
+        settings.cozy = event.target.checked;
+        if (event.target.checked) {
+          for (const enabled of comfortKeys) settings[enabled] = true;
+        }
+      } else {
+        settings[key] = event.target.checked;
+        if (comfortKeys.includes(key) && !event.target.checked) settings.cozy = false;
+      }
+      refreshCozyControls();
       applySettings();
       try {
         localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
@@ -199,6 +223,7 @@ function wireSettings() {
       }
     });
   }
+  refreshCozyControls();
   $('#settings-close').addEventListener('click', closeSettings);
 }
 const availableBloopers = () => BLOOPERS.filter(b => !b.comingSoon);
@@ -1030,6 +1055,15 @@ document.addEventListener('keydown', (e) => {
       else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
     }
     return;
+  }
+  if (settings.keyboardChoices && !settingsOpen() && /^[1-9]$/.test(e.key)
+      && !e.ctrlKey && !e.altKey && !e.metaKey && !e.shiftKey) {
+    const choiceButtons = [...(($ && $('#dlg-choices')) ? $('#dlg-choices').querySelectorAll('.choice-btn') : [])];
+    if (choiceButtons[Number(e.key) - 1]) {
+      e.preventDefault();
+      choiceButtons[Number(e.key) - 1].click();
+      return;
+    }
   }
   if (e.key === ' ' || e.key === 'Enter') {
     if (e.target.closest('button, input, select, textarea, a')) return;

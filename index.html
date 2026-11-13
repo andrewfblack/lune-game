@@ -53,7 +53,9 @@
     <label class="setting-row"><input id="setting-muted" type="checkbox"><span><b>Mute sounds</b><span>Turn off button sounds and dialogue beeps.</span></span></label>
     <label class="setting-row"><input id="setting-reducedMotion" type="checkbox"><span><b>Reduced motion</b><span>Stop floating, zooming and animated transitions. Starts with your device preference.</span></span></label>
     <label class="setting-row"><input id="setting-instantText" type="checkbox"><span><b>Instant text</b><span>Show each whole line immediately. You still choose when to continue.</span></span></label>
+    <label class="setting-row"><input id="setting-cozy" type="checkbox"><span><b>Cozy Mode</b><span>Shortcut: mute sounds, reduce motion, instant text, and larger dialogue all at once.</span></span></label>
     <label class="setting-row"><input id="setting-largeDialogue" type="checkbox"><span><b>Larger dialogue</b><span>Enlarge story text and choices. Long lines can scroll.</span></span></label>
+    <label class="setting-row"><input id="setting-keyboardChoices" type="checkbox"><span><b>Keyboard choice numbers</b><span>Press 1–9 in dialogue to select choices quickly. Tab still moves between buttons.</span></span></label>
     <p class="settings-preview">Rei: “Take your time, little brother.”</p>
     <p id="settings-status" role="status" aria-live="polite"></p>
     <button class="btn" id="settings-close" type="button">Done</button>
@@ -64,10 +66,10 @@
 <div id="screen-hub" class="screen hidden">
   <div class="hub-bg"></div>
   <header class="hub-top">
+    <button class="btn small ghost" id="btn-hub-menu" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="hub-menu-modal" aria-label="Fort menu">☰</button>
     <div class="hub-brand">LUNE</div>
     <div class="hub-stats">
       <button class="btn small ghost" id="btn-passport">📒 Memory Book <span id="hub-stamps">0/20</span></button>
-      <button class="btn small ghost" id="btn-hub-menu" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="hub-menu-modal">☰ Menu</button>
     </div>
   </header>
   <main class="hub-scroll" id="hub-scroll">
