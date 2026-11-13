@@ -68,7 +68,7 @@
       { id:'gumi first', line:' bunny ears', effects:[flag('gumiNickname','gumi')], speaker:'gumi',
         response:'Bunny if I like it; which I do. But Gumi still signs all official sleepover documents.' }),
     say(284, 'gumi', 'Wear the bunny ears. This is an approved formula.', 'bunny ears', { ifFlag:'gumiNickname' }),
-    story(284, 'Gumi keeps her usual name. The tally of baguettes needed for an alien crisis is still 47, and Bunny is a temporary celebration.', { unless:'gumiNickname' }),
+    story(284, 'Gumi keeps her usual name. The tally of baguettes needed for an alien crisis is still 47, and Bunny is a temporary celebration.', 'gumi-keeps-name', { unless:'gumiNickname' }),
     choice(285, 'bunny-equation-choice',
       { id:'show', line:'🧮 Show the Bunny-plus-forty-seven-breads equation.', effects:[flag('equationShown', true)], speaker:'tails',
         response:'BUNNY plus 47 breads. Teto is a statistical outlier, but nobody needs shame to eat vegetables.' },

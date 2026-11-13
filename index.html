@@ -50,12 +50,32 @@
   <div class="modal-box settings-box">
     <h2 id="settings-heading"><img class="button-art" src="assets/ui/settings.webp" alt="" onerror="this.hidden=true"> Comfort Settings</h2>
     <p id="settings-description">Changes apply straight away and stay in this browser. Your story progress is unchanged.</p>
-    <label class="setting-row"><input id="setting-muted" type="checkbox"><span><b>Mute sounds</b><span>Turn off button sounds and dialogue beeps.</span></span></label>
-    <label class="setting-row"><input id="setting-reducedMotion" type="checkbox"><span><b>Reduced motion</b><span>Stop floating, zooming and animated transitions. Starts with your device preference.</span></span></label>
-    <label class="setting-row"><input id="setting-instantText" type="checkbox"><span><b>Instant text</b><span>Show each whole line immediately. You still choose when to continue.</span></span></label>
-    <label class="setting-row"><input id="setting-cozy" type="checkbox"><span><b>Cozy Mode</b><span>Shortcut: mute sounds, reduce motion, instant text, and larger dialogue all at once.</span></span></label>
-    <label class="setting-row"><input id="setting-largeDialogue" type="checkbox"><span><b>Larger dialogue</b><span>Enlarge story text and choices. Long lines can scroll.</span></span></label>
-    <label class="setting-row"><input id="setting-keyboardChoices" type="checkbox"><span><b>Keyboard choice numbers</b><span>Press 1–9 in dialogue to select choices quickly. Tab still moves between buttons.</span></span></label>
+    <button type="button" id="btn-cozy" class="btn small cozy-button">Cozy Mode: Off</button>
+    <label class="setting-row toggle-row" title="Turn off button sounds and dialogue beeps.">
+      <span class="setting-label"><b>Mute sounds</b></span>
+      <input type="checkbox" id="setting-muted" class="toggle-input">
+      <span class="toggle-track" aria-hidden="true"></span>
+    </label>
+    <label class="setting-row toggle-row" title="Stop floating, zooming and animated transitions. Starts with your device preference.">
+      <span class="setting-label"><b>Reduced motion</b></span>
+      <input type="checkbox" id="setting-reducedMotion" class="toggle-input">
+      <span class="toggle-track" aria-hidden="true"></span>
+    </label>
+    <label class="setting-row toggle-row" title="Show each whole line immediately. You still choose when to continue.">
+      <span class="setting-label"><b>Instant text</b></span>
+      <input type="checkbox" id="setting-instantText" class="toggle-input">
+      <span class="toggle-track" aria-hidden="true"></span>
+    </label>
+    <label class="setting-row toggle-row" title="Enlarge story text and choices. Long lines can scroll.">
+      <span class="setting-label"><b>Larger dialogue</b></span>
+      <input type="checkbox" id="setting-largeDialogue" class="toggle-input">
+      <span class="toggle-track" aria-hidden="true"></span>
+    </label>
+    <label class="setting-row toggle-row" title="Press 1–9 in dialogue to select choices quickly. Tab still moves between buttons.">
+      <span class="setting-label"><b>Keyboard choice numbers</b></span>
+      <input type="checkbox" id="setting-keyboardChoices" class="toggle-input">
+      <span class="toggle-track" aria-hidden="true"></span>
+    </label>
     <p class="settings-preview">Rei: “Take your time, little brother.”</p>
     <p id="settings-status" role="status" aria-live="polite"></p>
     <button class="btn" id="settings-close" type="button">Done</button>

@@ -169,8 +169,8 @@ function applySettings() {
     $('#dlg-text')._skip = null;
     finish();
   }
-  const cozy = document && document.getElementById('setting-cozy');
-  if (cozy) cozy.checked = settings.cozy;
+  const cozy = document && document.getElementById('btn-cozy');
+  if (cozy) cozy.textContent = settings.cozy ? 'Cozy Mode: On' : 'Cozy Mode: Off';
 }
 function closeSettings() {
   $('#settings-modal').classList.add('hidden');
@@ -190,31 +190,66 @@ function wireSettings() {
       settingsBackground = [...document.querySelectorAll('.screen, .modal')]
         .filter(node => node.id !== 'settings-modal').map(node => [node, node.inert]);
       for (const [node] of settingsBackground) node.inert = true;
-      for (const key of Object.keys(settings)) $('#setting-' + key).checked = settings[key];
+      for (const key of Object.keys(settings)) { const input = $('#setting-' + key); if (input) input.checked = settings[key]; }
       $('#settings-status').textContent = '';
       $('#settings-modal').classList.remove('hidden');
-      $('#setting-muted').focus();
+      ($('#btn-cozy') || $('#setting-muted'))?.focus();
     });
   }
   const comfortKeys = ['muted', 'reducedMotion', 'instantText', 'largeDialogue'];
   function refreshCozyControls() {
     settings.cozy = comfortKeys.every(key => settings[key]);
-    const cozy = $('#setting-cozy');
-    if (cozy) cozy.checked = settings.cozy;
+    const cozy = $('#btn-cozy');
+    if (cozy) cozy.textContent = 'Cozy Mode: ' + (settings.cozy ? 'On' : 'Off');
   }
   for (const key of Object.keys(settings)) {
-    $('#setting-' + key).addEventListener('change', event => {
-      if (key === 'cozy') {
-        settings.cozy = event.target.checked;
-        if (event.target.checked) {
-          for (const enabled of comfortKeys) settings[enabled] = true;
-        }
-      } else {
-        settings[key] = event.target.checked;
-        if (comfortKeys.includes(key) && !event.target.checked) settings.cozy = false;
-      }
+    if (key === 'cozy' || key === 'keyboardChoices') {
+      if (key === 'keyboardChoices') continue;
+    }
+    const checkbox = $('#setting-' + key);
+    if (!checkbox) continue;
+    checkbox.addEventListener('change', event => {
+      settings[key] = event.target.checked;
+      if (comfortKeys.includes(key) && !event.target.checked) settings.cozy = false;
       refreshCozyControls();
       applySettings();
+      try {
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+        $('#settings-status').textContent = 'Settings saved in this browser.';
+      } catch (e) {
+        $('#settings-status').textContent = 'Applied for now. Browser storage is unavailable, so settings may not survive closing.';
+      }
+    });
+  }
+  const keyboardChoices = $('#setting-keyboardChoices');
+  if (keyboardChoices) {
+    keyboardChoices.addEventListener('change', event => {
+      settings.keyboardChoices = event.target.checked;
+      refreshCozyControls();
+      applySettings();
+      try {
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+        $('#settings-status').textContent = 'Settings saved in this browser.';
+      } catch (e) {
+        $('#settings-status').textContent = 'Applied for now. Browser storage is unavailable, so settings may not survive closing.';
+      }
+    });
+  }
+  const cozyButton = $('#btn-cozy');
+  if (cozyButton) {
+    cozyButton.addEventListener('click', () => {
+      settings.cozy = !settings.cozy;
+      if (settings.cozy) {
+        for (const key of comfortKeys) settings[key] = true;
+      } else {
+        for (const key of comfortKeys) settings[key] = false;
+      }
+      applySettings();
+      for (const key of Object.keys(settings)) {
+        const checkbox = $('#setting-' + key);
+        if (checkbox) checkbox.checked = settings[key];
+      }
+      refreshCozyControls();
       try {
         localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
         $('#settings-status').textContent = 'Settings saved in this browser.';
