@@ -65,7 +65,7 @@ function sceneCheckpoint(sceneId, index, extra = {}) {
 
 function saveGame(silent) {
   let saved = false;
-  try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); saved = true; } catch (e) {}
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); saved = true; } catch (e) { console.error('savefailed', e && e.message); }
   if (saved) {
     saveFailureShown = false;
     if (!silent) toast('💾 Game saved! (Bworple is watching)');
@@ -139,9 +139,14 @@ function continueInfo() {
 }
 
 // ───────────────────────── HELPERS ─────────────────────────
-const $ = (sel, root) => (root || document).querySelector(sel);
-const $$ = (sel, root) => [...(root || document).querySelectorAll(sel)];
-const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+function $(sel, root) {
+  const base = (typeof document !== 'undefined' && document) ? document : (typeof window !== 'undefined' && window && window.document ? window.document : null);
+  if (!base) return null;
+  return base.querySelector(sel);
+}
+const el = (tag, cls, html) => { const e = (typeof window !== 'undefined' ? window.document : document).createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+const $$ = (sel, root) => [...( (typeof window !== 'undefined' ? window.document : document) || root )?.querySelectorAll?.(sel) || []];
+
 const wait = ms => new Promise(r => setTimeout(r, ms));
 
 let settingsOpener = null;
@@ -203,7 +208,9 @@ let activeToast = null;
 const toastQueue = [];
 function showToast(notice) {
   activeToast = notice;
-  const t = $('#toast'); t.textContent = notice.msg; t.classList.remove('hidden');
+  const t = document && document.querySelector('#toast');
+  if (!t) { activeToast = null; if (toastQueue.length) showToast(toastQueue.shift()); return; }
+  t.textContent = notice.msg; t.classList.remove('hidden');
   clearTimeout(t._timer);
   t._timer = setTimeout(() => {
     activeToast = null;
@@ -247,9 +254,15 @@ function gainItem(id, n = 1) {
   SFX.sparkle(); toast(`${ITEMS[id].emoji} Keepsake: ${ITEMS[id].name}!`, 3000, true);
 }
 function updateBlooperCounters() {
-  $('#blooper-count-title').textContent = `${availableBlooperCount()}/${availableBloopers().length}`;
-  $('#blooper-count').textContent = `${availableBlooperCount()}/${availableBloopers().length}`;
-  if ($('#hub-bloopers')) $('#hub-bloopers').textContent = availableBlooperCount();
+  const doc = (typeof window !== 'undefined' ? window.document : (typeof document !== 'undefined' ? document : null));
+  if (doc) {
+    const title = doc.querySelector('#blooper-count-title');
+    if (title) title.textContent = `${availableBlooperCount()}/${availableBloopers().length}`;
+    const modal = doc.querySelector('#blooper-count');
+    if (modal) modal.textContent = `${availableBlooperCount()}/${availableBloopers().length}`;
+    const hub = doc.querySelector('#hub-bloopers');
+    if (hub) hub.textContent = availableBlooperCount();
+  }
 }
 
 // ═══════════════════════ SCREENS & TITLE ═══════════════════════
@@ -310,13 +323,16 @@ function renderHub() {
   const knownChapter = number => number <= S.chapter || EPISODES.some(episode => episode.chapter === number && S.done[episode.id]);
   if (!CHAPTERS[hubChapter] || !knownChapter(hubChapter)) hubChapter = S.chapter;
   const chapter = CHAPTERS[hubChapter];
-  $('.hub-bg').style.backgroundImage = hubChapter === 1 ? "url('assets/bg/laboratory.jpg')" : '';
-  $('.hub-bg').dataset.background = hubChapter === 1 ? 'laboratory' : 'pillowfort';
+  const _hubBg = (window && window.document) ? window.document.querySelector('.hub-bg') : null;
+  if (_hubBg) { _hubBg.style.backgroundImage = hubChapter === 1 ? "url('assets/bg/laboratory.jpg')" : ''; _hubBg.dataset.background = hubChapter === 1 ? 'laboratory' : 'pillowfort'; }
   const allAvailableEpisodesDone = EPISODES.filter(e => e.chapter <= S.chapter).every(e => S.done[e.id]);
-  $('#hub-chapter').textContent = chapter.title + (hubChapter === S.chapter && allAvailableEpisodesDone && !CHAPTERS[S.chapter + 1] ? ' · To be continued…' : '');
+  const hubChapterEl = (typeof window !== 'undefined' && window.document) ? window.document.querySelector('#hub-chapter') : null;
+  if (hubChapterEl) hubChapterEl.textContent = chapter.title + (hubChapter === S.chapter && allAvailableEpisodesDone && !CHAPTERS[S.chapter + 1] ? ' · To be continued…' : '');
   const chapterEpisodes = EPISODES.filter(episode => episode.chapter === hubChapter);
-  $('#hub-chapter-progress').textContent = `${chapterEpisodes.filter(episode => S.done[episode.id]).length} of ${chapterEpisodes.length} chapter memories kept. Take the next one at your own pace.`;
-  $('#hub-stamps').textContent = `${EPISODES.filter(e => S.done[e.id]).length}/${EPISODES.length}`;
+  const _hcp = (typeof window !== 'undefined' && window && window.document) ? window.document.querySelector('#hub-chapter-progress') : null;
+  if (_hcp) _hcp.textContent = `${chapterEpisodes.filter(episode => S.done[episode.id]).length} of ${chapterEpisodes.length} chapter memories kept. Take the next one at your own pace.`;
+  const _hubStamps = (typeof window !== 'undefined' && window && window.document) ? window.document.querySelector('#hub-stamps') : document.querySelector('#hub-stamps');
+  if (_hubStamps) _hubStamps.textContent = `${EPISODES.filter(e => S.done[e.id]).length}/${EPISODES.length}`;
   $('#hub-bloopers').textContent = availableBlooperCount();
   updateBlooperCounters();
 
@@ -728,9 +744,11 @@ function storyHome() {
 }
 
 function renderSceneArt(id, index, speech = null) {
+  const _d = typeof document !== 'undefined' ? document : (typeof window !== 'undefined' ? window.document : null);
+  const box = _d && _d.querySelector('#dlg-art');
+  if (!box) return;
   sceneArt = window.LUNE_SCENE_ART.get(id, index, S.flags, S.progress, speech);
-  const box = $('#dlg-art');
-  const image = $('#dlg-art-image');
+  const image = box.querySelector('#dlg-art-image');
   box.classList.toggle('hidden', !sceneArt.card);
   if (sceneArt.card) {
     image.alt = sceneArt.card.alt;
@@ -743,9 +761,12 @@ function renderSceneArt(id, index, speech = null) {
 }
 
 function setDlgBg(name) {
+  const bg = $('#dlg-bg'); if (!bg) return;
   const file = /\.(jpg|png|webp|svg)$/.test(name) ? name : `${name}.jpg`;
-  $('#dlg-bg').style.backgroundImage = `url('assets/bg/${file}')`;
-  $('#dlg-bg').dataset.background = file.replace(/\.[^.]+$/, '');
+  bg.style.backgroundImage = `url('assets/bg/${file}')`;
+  bg.dataset.background = file.replace(/\.[^.]+$/, '');
+  bg.classList.toggle('dry-castle-view', bg.dataset.background === 'secret_room'
+    && S?.progress?.sceneId === 'pillowfort' && !S.flags.originCastleSlide);
   // The full room illustration includes a slide. Use its left-side room view
   // during this reveal when the player's earlier castle choice was dry/unknown.
   $('#dlg-bg').classList.toggle('dry-castle-view', $('#dlg-bg').dataset.background === 'secret_room'
@@ -801,19 +822,26 @@ async function sayStep(st) {
 }
 
 function choiceStep(options) {
+  const _port = (typeof window !== 'undefined' && window && window.document) ? window.document : (typeof document !== 'undefined' ? document : null);
+  if (!_port) return 0;
   const run = sceneRun;
   choiceOpen = true;
-  $('.dlg-portraits').classList.add('choosing');
-  const portrait = $('#dlg-portrait');
-  portrait.style.visibility = 'visible';
-  portrait.src = sceneArt.portraits.lune?.src || CHARACTERS.lune.img;
-  portrait.alt = sceneArt.portraits.lune?.alt || CHARACTERS.lune.name;
-  portrait.style.setProperty('--portrait-color', CHARACTERS.lune.color);
-  portrait.onerror = () => { portrait.onerror = null; portrait.src = CHARACTERS.lune.img; };
-  $('#dlg-name').textContent = 'LUNE — YOUR CHOICE';
-  $('#dlg-name').style.background = CHARACTERS.lune.color;
-  $('#dlg-next').style.visibility = 'hidden';
-  const box = $('#dlg-choices'); box.innerHTML = ''; box.classList.remove('hidden');
+  const _portBox = (window && window.document) ? window.document.querySelector('.dlg-portraits') : null;
+  if (_portBox) _portBox.classList.add('choosing');
+  const portrait = (window && window.document) ? window.document.querySelector('#dlg-portrait') : null;
+  if (portrait) {
+    portrait.style.visibility = 'visible';
+    portrait.src = sceneArt.portraits.lune?.src || CHARACTERS.lune.img;
+    portrait.alt = sceneArt.portraits.lune?.alt || CHARACTERS.lune.name;
+    portrait.style.setProperty('--portrait-color', CHARACTERS.lune.color);
+    portrait.onerror = () => { portrait.onerror = null; portrait.src = CHARACTERS.lune.img; };
+  }
+  const _name = (window && window.document) ? window.document.querySelector('#dlg-name') : null;
+  if (_name) { _name.textContent = 'LUNE — YOUR CHOICE'; _name.style.background = CHARACTERS.lune.color; }
+  const _next = (window && window.document) ? window.document.querySelector('#dlg-next') : null;
+  if (_next) _next.style.visibility = 'hidden';
+  const box = (window && window.document) ? window.document.querySelector('#dlg-choices') : null;
+  if (box) { box.innerHTML = ''; box.classList.remove('hidden'); }
   return new Promise(resolve => {
     choiceResolve = resolve;
     options.forEach((opt, idx) => {
@@ -829,7 +857,12 @@ function choiceStep(options) {
       btn.addEventListener('click', () => {
         if (run !== sceneRun) return;
         choiceResolve = null;
-        SFX.click(); choiceOpen = false; $('.dlg-portraits').classList.remove('choosing'); box.classList.add('hidden'); box.innerHTML = ''; resolve(idx);
+        SFX.click(); choiceOpen = false;
+        const bp = (window && window.document) ? window.document.querySelector('.dlg-portraits') : null;
+        if (bp) bp.classList.remove('choosing');
+        const cb = (window && window.document) ? window.document.querySelector('#dlg-choices') : null;
+        if (cb) { cb.classList.add('hidden'); cb.innerHTML = ''; }
+        resolve(idx);
       });
       box.appendChild(btn);
     });
@@ -875,15 +908,17 @@ async function runScene(id, startIndex = 0) {
   skipMode = false;
   renderSceneArt(null, 0);
   showScreen('screen-dialogue');
-  $('.dlg-portraits').classList.remove('choosing');
-  $('#dlg-choices').classList.add('hidden');
+  const bp0 = (window && window.document) ? window.document.querySelector('.dlg-portraits') : null;
+  if (bp0) bp0.classList.remove('choosing');
+  const cb0 = (window && window.document) ? window.document.querySelector('#dlg-choices') : null;
+  if (cb0) cb0.classList.add('hidden');
   $('#dlg-skip').classList.remove('hidden');
   if (episode && S.done[id]) {
     S.progress = null; saveGame(true);
     setDlgBg(episode.steps.find(s => s.bg)?.bg || 'pillowfort');
     await sayStep({say:'narrator', text:episode.revisit || `You visit ${episode.name} again. Everyone is happy to see you.`});
     if (run !== sceneRun) return;
-    $('#dlg-skip').classList.add('hidden');
+    const _hideskip = $('#dlg-skip'); if (_hideskip) _hideskip.classList.add('hidden');
     returnToHub();
     return;
   }
@@ -927,14 +962,14 @@ async function runScene(id, startIndex = 0) {
     S.progress = sceneCheckpoint(id, si + 1);
     saveGame(true);
   }
-  $('#dlg-skip').classList.add('hidden');
+  const _finalskip = $('#dlg-skip'); if (_finalskip) _finalskip.classList.add('hidden');
   returnToHub();
 }
 function returnToHub() {
-  renderSceneArt(null, 0);
-  if (S.progress) { S.progress = null; saveGame(true); }
-  SFX.click();
-  showScreen('screen-hub'); renderHub();
+  try { renderSceneArt(null, 0); } catch (e) {}
+  if (S.progress) { try { S.progress = null; saveGame(true); } catch (e) {} }
+  try { SFX.click(); } catch (e) {}
+  try { showScreen('screen-hub'); renderHub(); } catch (e) {}
 }
 
 // dialogue click / keys

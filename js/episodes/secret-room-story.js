@@ -112,6 +112,7 @@
       { id:'ask lune', line:' key', lineExtra:' “Lune, are they approved?”', effects:[flag('secretDoorHandle','lune')], speaker:'rei',
         response:'Approved already. A secret code is not necessary; the handle still works.' }),
     story(212, 'Ryan grabs the handle. The door opens. Everyone is allowed and nobody is reduced to a dancing pair of doorknobs. Music plays at normal volume.', 'door open'),
+    say(212, 'rei', 'The door-save point. The three-minute confusion can replay without repeating effects.', 'door-save'),
     say(212, 'rei', 'The door swings open.'),
     say(212, 'rei', "LUNE!!! THAT'S PERFECT!!! BLOOPER NUMBER ONE!!!", 'bloop-one'),
     { do:'blooper', id:'door' },
