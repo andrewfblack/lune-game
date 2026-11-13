@@ -1,0 +1,172 @@
+'use strict';
+// Chapter 1, Episode 2 — polished adaptation of TETO 174–194.
+// New connective wording and paired reactions are adaptation, not verbatim chat.
+// Family detector/signature are story props, never real scans or input forms.
+(function ({ registerCharacter }) {
+  registerCharacter('moon-key-visitor', {
+    name: 'THE VISITOR', img: 'assets/characters/masked-visitor.jpg', color: '#d9c8ff',
+    title: 'The Guest at the Laboratory Door',
+    bio: 'A visitor in a white coat and a silver mask, accompanied by Coco. A temporary story portrait; the guest’s introduction happens during the episode.',
+  });
+  registerCharacter('space-courier', {
+    name: 'SPACE VISITOR', img: 'assets/characters/space-courier.jpg', color: '#b6e6a3',
+    title: 'Galactic Express Delivery Worker',
+    bio: 'A little green visitor with an enormous purple bow, a pink parcel, and very little patience for being called a space pickle. Temporary story portrait.',
+  });
+  const say = (source, speaker, text, checkpointId, guard = {}) => ({
+    source, say: speaker, text, flowEdit: 'Polished, source-based dialogue for story flow.',
+    ...(checkpointId ? { checkpointId } : {}), ...guard,
+  });
+  const story = (source, narrator, checkpointId, guard = {}) => ({
+    source, narrator, ...(checkpointId ? { checkpointId } : {}), ...guard,
+  });
+  const flag = (key, value) => ({ do: 'flag', key, value });
+  function choice(source, checkpointId, first, second, guard = {}) {
+    return {
+      source, checkpointId, ...guard,
+      choice: [first, second].map(option => ({
+        source, label: option.line, optionId: option.id,
+        effects: [flag(`moonKeyChoice${checkpointId}`, option.id), ...(option.effects || [])],
+        reply: { ...say(source, option.speaker || 'rei', option.response), choiceResponse: option.id },
+      })),
+    };
+  }
+  const oldSteps = ['start', 'apology', 'family-choice', 'join-auntie', 'lullaby',
+    'lullaby-choice', 'saucer', 'courier-warning', 'parcel-choice', 'contents',
+    'letter', 'door', 'closing', 'complete'];
+
+  window.LUNE_MOON_KEY = {
+    id: 'moon-key', after: 'first-ah', requires: ['first-ah'],
+    name: 'A Key from the Moon Keeper', emoji: '🗝️',
+    desc: 'A mysterious relative, a space delivery and one very sparkly key',
+    keepsake: 'silverMoonKey', source: 'TETO 174–194; polished adaptation with two options per choice',
+    dialogueStyle: 'polished-two-choice',
+    checkpointVersion: 4,
+    // Versions 1/2 were the short script before/after the shared polishing pass.
+    checkpointMigrations: {
+      1: oldSteps.map(checkpointId => ({ checkpointId, reask: true })),
+      2: oldSteps.map(checkpointId => ({ checkpointId, reask: true })),
+    },
+    passport: 'Auntie introduced herself, Galactic Express brought a silver key, and the Moon Keeper’s mysterious door stayed closed.',
+    revisit: 'The silver key rests beside the Moon Keeper’s letter. Auntie is welcome, the courier has finished the delivery, and the unopened door can wait.',
+    steps: [
+      { checkpointId: 'start', bg: 'laboratory.jpg' },
+      story(174, 'Rei sits beside the cushions. Momo and Coco float together while the visitor in the silver mask waits by the door.'),
+      say(176, 'rei', 'Two reunited stars and a mysterious visitor. Lune, how much of this did you already know?'),
+      choice(174, 'boundary-choice',
+        { id: 'just-fixed', line: '💬 “You just fixed my voice. Why am I getting quizzed?”',
+          response: 'Oh. You’re right. I literally just finished your voice, and I’m asking questions as if you’ve been explaining things for twelve years.' },
+        { id: 'slow-down', line: '🌙 “One mystery at a time, please.”',
+          response: 'One mystery at a time. Starting with the person in the doorway—not a surprise interview for my little brother.' }),
+      say(176, 'rei', 'Sorry, little brother. I got carried away. Being the big sister doesn’t mean I get to make you explain everything.', 'apology'),
+      say(176, 'momo-star', 'Utau!'),
+      say(176, 'rei', 'Momo, I can hear you being amused.'),
+      say(176, 'moon-key-visitor', 'Ahem. Are you two finished?'),
+      say(176, 'rei', 'No. I’m busy apologizing to my brother. You may continue waiting politely.'),
+      say(176, 'coco', 'Utauloid!'),
+      say(176, 'rei', 'Right. Shall we ask our visitor about the family connection?'),
+      choice(177, 'family-choice',
+        { id: 'detector', line: '🔎 “Let’s try your Family Detector first.”', effects: [flag('moonKeyDetector', true)],
+          response: 'Family Detector 3000! Excellent. It reads a pretend story card, not anyone’s face. Nobody is scanning you, little brother.' },
+        { id: 'ask-directly', line: '👋 “Let’s ask them. We don’t need a gadget.”', effects: [flag('moonKeyDetector', false)],
+          response: 'A direct question. Very sensible. I will put the enormous pink-button machine away before it gets any ideas.' }),
+      story(179, 'Rei wheels out a little machine covered in moon stickers. The visitor places a fictional family-record card on its tray.', 'detector', { ifFlag: 'moonKeyDetector' }),
+      say(179, 'moon-key-visitor', 'Is the machine really necessary?', null, { ifFlag: 'moonKeyDetector' }),
+      say(179, 'rei', 'We’re checking a story card, not conducting a medical exam. And I already put on the science goggles.', null, { ifFlag: 'moonKeyDetector' }),
+      story(179, 'The quiet display reaches 87%, then stops at: FAMILY CONNECTION FOUND — IDENTITY LOCKED.', null, { ifFlag: 'moonKeyDetector' }),
+      say(179, 'rei', 'Who put a password on our family tree?! That is an extremely inconvenient tree.', null, { ifFlag: 'moonKeyDetector' }),
+      choice(180, 'record-choice',
+        { id: 'story-code', line: '🤫 Whisper the silly story-code: “one, two, three, four.”',
+          response: 'One, two, three, four? Whoever secured this pretend family tree owes me an explanation. No real passwords needed, thankfully.' },
+        { id: 'visitor-unlocks', line: '📋 Ask the visitor to unlock their own story card.', speaker: 'moon-key-visitor',
+          response: 'Of course. It is my introduction, after all. You shouldn’t have to guess the code to hear it.' },
+        { ifFlag: 'moonKeyDetector' }),
+      story(182, 'The pretend record opens: FAMILY CONNECTION CONFIRMED. IDENTITY: UNKNOWN. Rei looks from the display to the visitor.', null, { ifFlag: 'moonKeyDetector' }),
+      say(182, 'rei', 'It unlocked the record but still won’t introduce you. I am giving this machine a very poor politeness rating.', null, { ifFlag: 'moonKeyDetector' }),
+      say(182, 'moon-key-visitor', 'I am related to Lune. And there is something I have wanted to tell him for twelve years.', null, { unless: 'moonKeyDetector' }),
+      say(182, 'rei', 'You can tell him. But I’m staying right here.'),
+      story(182, 'The visitor sets a silver crescent-moon necklace on the table.'),
+      say(182, 'moon-key-visitor', 'Lune... do you know the lullaby about the moon and the cherry blossom tree?', 'lullaby'),
+      choice(183, 'lullaby-choice',
+        { id: 'explain-song', line: '🌸 “What lullaby? Could you explain?”', effects: [flag('moonKeyAskLullaby', true)], speaker: 'moon-key-visitor',
+          response: 'A song your mother used to sing when you were a baby. I should explain the family connection instead of starting with riddles.' },
+        { id: 'name-first', line: '🌙 “The song can wait. Could you tell us who you are first?”', effects: [flag('moonKeyAskLullaby', false)], speaker: 'moon-key-visitor',
+          response: 'Of course. We can leave the song for another day. A proper introduction comes first.' }),
+      say(185, 'rei', 'His mother used to sing it? Oh. That is rather more than a mysterious song title.', null, { ifFlag: 'moonKeyAskLullaby' }),
+      story(185, 'The visitor removes the silver mask. No tune is played, and Lune is not asked to remember or perform one.', 'reveal'),
+      say(185, 'moon-key-visitor', 'Lune... I’m your aunt.'),
+      say(185, 'rei', 'His AUNT?! Little brother, I think our family just got a lot bigger.'),
+      { source: 185, checkpointId: 'join-auntie', do: 'join', id: 'auntie' },
+      say(185, 'auntie', 'I’m sorry for the dramatic entrance. Coco and I wanted to find you.'),
+      say(185, 'rei', 'I have several questions about the mask. And just to check—you didn’t cause that laboratory puff, did you?'),
+      say(185, 'auntie', 'No. I didn’t cause it.'),
+      choice(186, 'theory-choice',
+        { id: 'aliens', line: '👽 “Maybe it was aliens!”',
+          response: 'Aliens?! Why didn’t I put that on my list? I had “computer sulking” and “Momo knows more than he admits.”' },
+        { id: 'no-blame', line: '💜 “Let’s not blame anyone before we know.”',
+          response: 'Agreed. No blaming Auntie, no blaming you, and no interrogating the cushions. They’ve been very helpful.' }),
+      story(188, 'A green glow appears beyond the window. A little saucer hovers outside the laboratory, with a neatly wrapped pink parcel visible beneath it.', 'saucer'),
+      say(188, 'rei', 'Lune. Please tell me that is a really big pancake.'),
+      say(188, 'momo-star', 'Utauloid!'),
+      story(188, 'A small green visitor wearing an enormous purple bow steps into view. Rei holds up her flashlight like a very official badge.'),
+      say(188, 'space-courier', 'Greetings, Earthlings! I’m looking for Hanami Lune.'),
+      say(188, 'rei', 'State your business, space pickle!', 'courier-warning'),
+      say(188, 'space-courier', '...Space pickle?'),
+      choice(189, 'courier-choice',
+        { id: 'hero-pose', line: '🦸 Stand beside Rei in a very dramatic sibling-hero pose.', effects: [flag('moonKeyHeroPose', true)], speaker: 'space-courier',
+          response: 'Please don’t shout! I’m allergic to drama. I have a delivery bag, not a villain speech.' },
+        { id: 'notice-parcel', line: '📦 “Is that a package for me?”', effects: [flag('moonKeyHeroPose', false)], speaker: 'space-courier',
+          response: 'Yes! At last, somebody noticed the parcel. Galactic Express delivery, addressed to Hanami Lune.' }),
+      say(191, 'rei', 'Behold, the unstoppable sibling duo! Rei, the robotic big sister, and Lune, the boy who would like an explanation!', null, { ifFlag: 'moonKeyHeroPose' }),
+      say(191, 'space-courier', 'I’m literally here to deliver a package.', null, { ifFlag: 'moonKeyHeroPose' }),
+      say(191, 'rei', 'A package? We nearly gave the mail carrier an entire superhero introduction.', null, { ifFlag: 'moonKeyHeroPose' }),
+      say(191, 'rei', 'A delivery! You spotted that much faster than I did. I will lower my extremely official flashlight.', null, { unless: 'moonKeyHeroPose' }),
+      say(191, 'space-courier', 'And somebody called me a pickle.'),
+      say(191, 'rei', 'Pfft—sorry. Your purple bow is very professional.'),
+      story(191, 'The parcel label reads: GALACTIC EXPRESS. Recipient: Hanami Lune. Sender: The Moon Palace. Contents: Classified.'),
+      choice(192, 'parcel-choice',
+        { id: 'story-signature', line: '✍️ Accept with Rei nearby and make a pretend “Lune” signature.', speaker: 'space-courier',
+          response: 'Delivery confirmed! Thank you for choosing Galactic Express. That is an excellent pretend signature.' },
+        { id: 'check-label', line: '🏷️ Ask the courier to check the label with Rei first.', speaker: 'space-courier',
+          response: 'Recipient: Hanami Lune. Sender: the Moon Palace. No real forms, fees or information needed. We can look at the box together.' }),
+      say(194, 'rei', 'A silver ribbon, a moon seal, and a box that is suspiciously good at looking mysterious.'),
+      choice(194, 'opening-choice',
+        { id: 'lune-opens', line: '📦 Open it carefully with Rei beside you.', effects: [flag('moonKeyReiOpens', false)],
+          response: 'Together. I will hold the pillow shield, purely because it makes me feel very prepared.' },
+        { id: 'rei-opens', line: '💜 Ask Rei to open it while you watch.', effects: [flag('moonKeyReiOpens', true)],
+          response: 'One careful big-sister parcel opening, coming up. Stand where you are comfortable.' }),
+      story(194, 'With Lune watching, Rei lifts the lid. A little puff of pink sparkles rises over the empty tabletop.', null, { ifFlag: 'moonKeyReiOpens' }),
+      story(194, 'Lune lifts the lid beside Rei’s pillow shield. A little puff of pink sparkles rises over the empty tabletop.', null, { unless: 'moonKeyReiOpens' }),
+      say(194, 'rei', 'There is one sparkle on my nose. I have become a very small disco ball.'),
+      say(194, 'coco', 'Loid!'),
+      story(194, 'Inside are a tiny silver key, an ordinary moon-shaped cookie, and a folded letter.', 'contents'),
+      say(194, 'rei', 'A key, a letter, and a cookie. I know which one I understand best.'),
+      story(194, 'Dear Lune, congratulations on finding your voice. The silver key will open the door to your family’s greatest secret. P.S. The cookie is for your big sister. — The Moon Keeper', 'letter'),
+      choice(194, 'cookie-choice',
+        { id: 'cookie-for-rei', line: '🍪 “The cookie is for you, Rei!”',
+          response: 'For me?! A postal service that remembers big sisters. Finally, some excellent intergalactic manners.' },
+        { id: 'protect-letter', line: '📜 Keep the letter safe from crumbs while Rei tries her cookie.',
+          response: 'Very sensible. Important family clues should not be covered in crumbs. That is a rule I have only just invented.' }),
+      story(194, 'Rei takes a small bite of the ordinary cookie. The little silver key begins to glow beside the letter.'),
+      say(194, 'rei', 'Oh, my circuits. Delicious. Wait... is the key pointing at something?'),
+      story(194, 'Behind the laboratory bookshelf, a mysterious closed door has appeared. The key points toward its moon-shaped marking.', 'door'),
+      say(194, 'rei', 'That door was not there five minutes ago.'),
+      choice(194, 'door-choice',
+        { id: 'compare-key', line: '🗝️ Compare the key and the moon marking—without unlocking the door.', effects: [flag('moonKeyInspectDoor', true)],
+          response: 'The shapes match. We have found where the key belongs, not a reason to rush through.' },
+        { id: 'rest-key', line: '🌙 Put the key beside the letter and leave exploring for later.', effects: [flag('moonKeyInspectDoor', false)],
+          response: 'Then that is exactly what we’ll do. A mysterious door can wait for a rested little brother.' }),
+      story(194, 'Rei notes the matching moon shapes. The key is not inserted, and the door remains closed.', null, { ifFlag: 'moonKeyInspectDoor' }),
+      story(194, 'The key rests beside the letter. Nobody approaches the lock; the door remains closed.', null, { unless: 'moonKeyInspectDoor' }),
+      say(194, 'rei', 'Auntie, two stars, a very patient space courier, and a letter from the Moon Keeper. That is plenty for one evening.', 'closing'),
+      say(194, 'auntie', 'We can take our time.'),
+      { source: 194, checkpointId: 'complete', do: 'done', id: 'moon-key' },
+    ],
+  };
+  // The shared pass briefly numbered this expanded, same-order script as v3.
+  // Preserve those selections as well; don't discard a just-created checkpoint.
+  window.LUNE_MOON_KEY.checkpointMigrations[3] = window.LUNE_MOON_KEY.steps.map((step, index) => {
+    step.checkpointId ||= `moon-key-step-${index}`;
+    return { checkpointId: step.checkpointId };
+  });
+})(window.LUNE_CONTENT);

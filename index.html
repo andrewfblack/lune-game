@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LUNE: Legend of the Pillow Fort</title>
+<link rel="icon" href="assets/characters/bworple.jpg">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ══════════ TITLE SCREEN ══════════ -->
+<div id="screen-title" class="screen active">
+  <div class="title-bg"></div>
+  <div class="title-inner">
+    <div class="title-logo">
+      <div class="title-lune">LUNE</div>
+      <div class="title-sub">Legend of the Pillow Fort</div>
+    </div>
+    <div class="title-menu">
+      <button class="btn big" id="btn-new">▶ New Game</button>
+      <button class="btn big ghost hidden" id="btn-continue">↻ Continue</button>
+      <button class="btn big ghost" id="btn-howto">? How to Play</button>
+      <button class="btn big ghost btn-with-icon" id="btn-settings-title"><img class="button-art" src="assets/ui/settings.webp" alt="" onerror="this.hidden=true">Settings</button>
+      <button class="btn big ghost btn-with-icon" id="btn-bloopers-title"><img class="button-art" src="assets/ui/clapperboard.webp" alt="" onerror="this.hidden=true">Blooper Reel <span id="blooper-count-title" class="pill">0/5</span></button>
+    </div>
+    <div class="title-foot">A very squishy story adventure • Starring Lune, Rei, the Vocaloids &amp; one suspicious slime</div>
+  </div>
+</div>
+
+<!-- ══════════ HOW TO PLAY ══════════ -->
+<div id="howto-modal" class="modal hidden">
+  <div class="modal-box">
+    <h2>How to Play</h2>
+    <ul class="howto-list">
+      <li>🗣️ <b>Talk</b> to your friends — tap the glowing ▼ or press <kbd>Space</kbd> / <kbd>Enter</kbd>.</li>
+      <li>🗺️ <b>Explore</b> the pillow fort. Your choices shape Lune's sleepover moments.</li>
+      <li>📒 Add a <b>sticker to Lune’s Memory Book</b> for each completed episode. Use its chapter tabs to revisit your memories. Finishing a chapter’s episodes unlocks the next chapter.</li>
+      <li>🎁 Find <b>keepsakes</b>, Bloopers and Settings in the hub’s <b>Menu</b>. Open <b>Friends of the Fort</b> for a portrait grid, then tap a friend for their character card. There are no battles or party selections.</li>
+      <li>🎬 Collect bloopers for the Flop-O-Matic 3000. Choose which clips to save.</li>
+      <li>🌟 Start with <b>The First Ah</b> in Chapter 1. The five-week sleepover follows in Chapter 2; Slime &amp; Secrets is Chapter 3.</li>
+      <li>💾 Your game <b>autosaves</b> during conversations. There is nothing extra to press.</li>
+    </ul>
+    <button class="btn" id="howto-close">Got it!</button>
+  </div>
+</div>
+
+<!-- Comfort preferences are separate from story saves. -->
+<div id="settings-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="settings-heading" aria-describedby="settings-description">
+  <div class="modal-box settings-box">
+    <h2 id="settings-heading"><img class="button-art" src="assets/ui/settings.webp" alt="" onerror="this.hidden=true"> Comfort Settings</h2>
+    <p id="settings-description">Changes apply straight away and stay in this browser. Your story progress is unchanged.</p>
+    <label class="setting-row"><input id="setting-muted" type="checkbox"><span><b>Mute sounds</b><span>Turn off button sounds and dialogue beeps.</span></span></label>
+    <label class="setting-row"><input id="setting-reducedMotion" type="checkbox"><span><b>Reduced motion</b><span>Stop floating, zooming and animated transitions. Starts with your device preference.</span></span></label>
+    <label class="setting-row"><input id="setting-instantText" type="checkbox"><span><b>Instant text</b><span>Show each whole line immediately. You still choose when to continue.</span></span></label>
+    <label class="setting-row"><input id="setting-largeDialogue" type="checkbox"><span><b>Larger dialogue</b><span>Enlarge story text and choices. Long lines can scroll.</span></span></label>
+    <p class="settings-preview">Rei: “Take your time, little brother.”</p>
+    <p id="settings-status" role="status" aria-live="polite"></p>
+    <button class="btn" id="settings-close" type="button">Done</button>
+  </div>
+</div>
+
+<!-- ══════════ HUB / MAP ══════════ -->
+<div id="screen-hub" class="screen hidden">
+  <div class="hub-bg"></div>
+  <header class="hub-top">
+    <div class="hub-brand">LUNE</div>
+    <div class="hub-stats">
+      <button class="btn small ghost" id="btn-passport">📒 Memory Book <span id="hub-stamps">0/20</span></button>
+      <button class="btn small ghost" id="btn-hub-menu" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="hub-menu-modal">☰ Menu</button>
+    </div>
+  </header>
+  <main class="hub-scroll" id="hub-scroll">
+    <div class="hub-heading"><span class="hub-eyebrow">ONE LITTLE ADVENTURE AT A TIME</span>
+      <h1 class="hub-chapter" id="hub-chapter">Chapter 1 · A Voice Among the Stars</h1>
+      <p id="hub-chapter-progress"></p></div>
+    <nav id="hub-chapter-tabs" class="hub-chapter-tabs" aria-label="Browse story chapters"></nav>
+    <div class="hub-locations" id="hub-locations"></div>
+  </main>
+  <footer class="hub-footer">
+    <button class="friends-launcher" id="btn-friends" type="button" aria-haspopup="dialog" aria-controls="friends-modal" aria-expanded="false">
+      <span id="friends-preview" class="friends-preview" aria-hidden="true"></span>
+      <span><b>Friends of the Fort</b><small><span id="friends-count">2</span> friends met · tap to visit</small></span><span aria-hidden="true">⌃</span>
+    </button>
+  </footer>
+</div>
+
+<div id="hub-menu-modal" class="modal sheet-modal hidden" role="dialog" aria-modal="true" aria-labelledby="hub-menu-title">
+  <div class="modal-box sheet-box">
+    <div class="sheet-head"><div><span class="hub-eyebrow">MAKE YOURSELF AT HOME</span><h2 id="hub-menu-title">Fort menu</h2></div>
+      <button id="hub-menu-close" class="sheet-close" type="button" aria-label="Close fort menu">✕</button></div>
+    <div class="hub-menu-actions">
+      <button class="menu-action" id="btn-bag" type="button"><img class="menu-art" src="assets/ui/gift.webp" alt=""><span><b>Keepsakes</b><small>Little things worth keeping</small></span><span aria-hidden="true">›</span></button>
+      <button class="menu-action" id="btn-bloopers-hub" type="button"><img class="menu-art" src="assets/ui/clapperboard.webp" alt="" onerror="this.hidden=true"><span><b>Bloopers <span id="hub-bloopers">0</span></b><small>The Flop-O-Matic reel</small></span><span aria-hidden="true">›</span></button>
+      <button class="menu-action" id="btn-settings-hub" type="button"><img class="menu-art" src="assets/ui/settings.webp" alt="" onerror="this.hidden=true"><span><b>Comfort settings</b><small>Sound, motion and reading</small></span><span aria-hidden="true">›</span></button>
+      <button class="menu-action" id="btn-hub-home" type="button"><img class="menu-art" src="assets/ui/home.webp" alt="" onerror="this.hidden=true"><span><b>Back to title</b><small>Your place stays saved</small></span></button>
+    </div>
+  </div>
+</div>
+
+<div id="friends-modal" class="modal sheet-modal hidden" role="dialog" aria-modal="true" aria-labelledby="friends-title">
+  <div class="modal-box sheet-box friends-sheet">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <div class="sheet-head"><div><span class="hub-eyebrow">FAMILIAR FACES, COZY COMPANY</span><h2 id="friends-title">Friends of the Fort</h2></div>
+      <button id="friends-close" class="sheet-close" type="button" aria-label="Close friends drawer">✕</button></div>
+    <p class="sheet-description">Tap a friend to open their character card.</p>
+    <div class="hub-friends" id="hub-friends" aria-label="Friends already met"></div>
+  </div>
+</div>
+
+<!-- ══════════ CHARACTER CARD ══════════ -->
+<div id="character-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="character-name">
+  <div class="modal-box character-card">
+    <img id="character-portrait" class="character-portrait" alt="" draggable="false">
+    <h2 id="character-name"></h2>
+    <div id="character-title" class="character-title"></div>
+    <p id="character-bio" class="character-bio"></p>
+    <button class="btn" id="character-close">Back to the fort</button>
+  </div>
+</div>
+
+<!-- Legacy passport IDs stay stable; this is now the handmade Memory Book. -->
+<div id="passport-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="memory-book-title" aria-describedby="passport-summary">
+  <div class="modal-box passport-box">
+    <div class="passport-head">
+      <div class="passport-emblem" aria-hidden="true">📒</div>
+      <div>
+        <h2 id="memory-book-title">Lune’s Memory Book</h2>
+        <p id="passport-summary" class="passport-summary"></p>
+      </div>
+    </div>
+    <nav id="memory-tabs" class="memory-tabs" aria-label="Memory Book chapters"></nav>
+    <div id="passport-list" class="passport-list"></div>
+    <div class="passport-nav">
+      <button class="btn small ghost" id="passport-prev" type="button" aria-label="Previous memory page">‹ Previous</button>
+      <span id="passport-page-count" class="passport-page-count" aria-live="polite"></span>
+      <button class="btn small ghost" id="passport-next" type="button" aria-label="Next memory page">Next ›</button>
+    </div>
+    <button class="btn" id="passport-close">Back to the fort</button>
+  </div>
+</div>
+
+<!-- ══════════ KEEPSAKES ══════════ -->
+<div id="bag-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="bag-title">
+  <div class="modal-box">
+    <h2 id="bag-title">🎁 Keepsakes &amp; Memories</h2>
+    <div id="bag-list" class="bag-list"></div>
+    <button class="btn" id="bag-close">Close</button>
+  </div>
+</div>
+
+<!-- ══════════ DIALOGUE / CUTSCENE ══════════ -->
+<div id="screen-dialogue" class="screen hidden">
+  <div class="dlg-bg" id="dlg-bg"></div>
+  <div class="dlg-portraits"><img id="dlg-portrait" alt="speaker" draggable="false"></div>
+  <div class="dlg-art hidden" id="dlg-art"><img id="dlg-art-image" alt="" draggable="false"></div>
+  <button class="dlg-home" id="dlg-home" type="button" title="Save your place and return to the title screen"><img class="button-art" src="assets/ui/home.webp" alt="" onerror="this.hidden=true">Home</button>
+  <button class="dlg-settings" id="btn-settings-dialogue" type="button"><img class="button-art" src="assets/ui/settings.webp" alt="" onerror="this.hidden=true">Settings</button>
+  <button class="dlg-skip hidden" id="dlg-skip">Skip ▸▸</button>
+  <div class="dlg-box">
+    <div class="dlg-name" id="dlg-name">LUNE</div>
+    <div class="dlg-text" id="dlg-text"></div>
+    <div class="dlg-next" id="dlg-next">▼</div>
+  </div>
+  <div class="dlg-choices hidden" id="dlg-choices"></div>
+</div>
+
+<!-- ══════════ BLOOPER REEL ══════════ -->
+<div id="screen-bloopers" class="screen hidden">
+  <div class="blooper-head">
+    <h1><img class="button-art" src="assets/ui/clapperboard.webp" alt="" onerror="this.hidden=true"> Flop-O-Matic 3000 — Blooper Reel <span id="blooper-count" class="pill">0/3</span></h1>
+    <button class="btn small ghost" id="bloopers-close">✕ Close</button>
+  </div>
+  <div class="blooper-grid" id="blooper-grid"></div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="js/content.js"></script>
+<script src="js/episodes/entrance.js"></script>
+<script src="js/episodes/first-ah.js"></script>
+<script src="js/episodes/moon-key.js"></script>
+<script src="js/episodes/captain-duckula.js"></script>
+<script src="js/episodes/hug-alarm.js"></script>
+<script src="js/episodes/royal-dare.js"></script>
+<script src="js/episodes/bworple-castle.js"></script>
+<script src="js/episodes/moonpalace.js"></script>
+<script src="js/episodes/duckdom.js"></script>
+<script src="js/episodes/duckdom-story.js"></script>
+<script src="js/episodes/dares.js"></script>
+<script src="js/episodes/pillowfort.js"></script>
+<script src="js/episodes/workshop.js"></script>
+<script src="js/episodes/workshop-story.js"></script>
+<script src="js/episodes/slimmarchives.js"></script>
+<script src="js/episodes/slimmarchives-story.js"></script>
+<script src="js/episodes/bworplevoice.js"></script>
+<script src="js/episodes/bworplevoice-story.js"></script>>
+<script src="js/episodes/miku-cover.js"></script>
+ <script src="js/episodes/karmacam.js"></script>
+<script src="js/episodes/karmacam-story.js"></script>
+<script src="js/episodes/baguettecrisis.js"></script>
+<script src="js/episodes/baguettecrisis-story.js"></script>
+<script src="js/episodes/secret-room-story.js"></script>
+<script src="js/dialogue-polish.js"></script>
+<script src="js/scene-art.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>

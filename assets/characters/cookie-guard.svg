@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="480" viewBox="0 0 400 480">
+  <rect width="400" height="480" rx="32" fill="#2b2048"/>
+  <circle cx="200" cy="205" r="110" fill="#e9b980"/>
+  <g fill="#9a633f"><circle cx="145" cy="154" r="12"/><circle cx="267" cy="195" r="12"/><circle cx="210" cy="279" r="12"/></g>
+  <g fill="#402936"><circle cx="168" cy="205" r="9"/><circle cx="225" cy="205" r="9"/></g>
+  <path d="M175 242q25 22 50 0" fill="none" stroke="#402936" stroke-width="6"/>
+  <path d="M110 117h180l-40-44H150z" fill="#91bcde"/>
+  <text x="200" y="390" text-anchor="middle" font-family="sans-serif" font-size="29" fill="#ffc78c">COOKIE GUARD</text>
+  <text x="200" y="430" text-anchor="middle" font-family="sans-serif" font-size="18" fill="#e5d6ff">Temporary magical-cookie portrait</text>
+</svg>

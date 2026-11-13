@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="480" viewBox="0 0 400 480">
+  <rect width="400" height="480" rx="32" fill="#2b2048"/>
+  <circle cx="200" cy="177" r="95" fill="#eadbff"/><circle cx="237" cy="148" r="84" fill="#2b2048"/>
+  <text x="200" y="335" text-anchor="middle" font-family="sans-serif" font-size="32" fill="#eadbff">AUNTIE</text>
+  <text x="200" y="387" text-anchor="middle" font-family="sans-serif" font-size="21" fill="#cbb7ec">Moon visitor story card</text>
+  <text x="200" y="430" text-anchor="middle" font-family="sans-serif" font-size="18" fill="#cbb7ec">Portrait awaiting family review</text>
+</svg>
